@@ -1,11 +1,12 @@
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import YourComponent from "../../testing";
 
 export const Login = () => {
   const [qrCode, setQrCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [userData, setUserData] = useState(null);
+  const [uniqueIdentifier, setUniqueIdentifier] = useState('')
 
 
   const generateRandomString = (length) => {
@@ -18,12 +19,12 @@ export const Login = () => {
     return randomString;
   };
 
-  const handleQRGeneration = () => {
+  const handleQRGeneration = async() => {
     setLoading(true);
-    const uniqueIdentifier = generateRandomString(60);
-
+    const uniqueIdentifier =  generateRandomString(60);
+    setUniqueIdentifier(uniqueIdentifier)
     axios
-      .post("http://192.168.56.1:3001/api/session/generateQR", {
+      .post("http://192.168.0.108:3001/api/session/generateQR", {
         uniqueIdentifier,
       })
       .then((response) => {
@@ -37,6 +38,7 @@ export const Login = () => {
         setLoading(false);
       });
   };
+
 
   return (
     <div>
@@ -53,7 +55,7 @@ export const Login = () => {
         </>
       )}
 
-      <YourComponent />
+      <YourComponent uniqueIdentifierFrom={uniqueIdentifier} />
     </div>
   );
 };

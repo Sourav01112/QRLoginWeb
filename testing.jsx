@@ -1,31 +1,58 @@
 import { useEffect, useState } from "react";
 import io from "socket.io-client";
+import axios from "axios";
 
-const YourComponent = () => {
+
+const YourComponent = ({ uniqueIdentifierFrom }) => {
   const [userData, setUserData] = useState(null);
+  console.log({ uniqueIdentifierFrom })
+
+  let payload = {
+    check: 'true'
+  }
 
   useEffect(() => {
     const storedData = localStorage.getItem("userData");
-  
+
     if (storedData) {
       const parsedData = JSON.parse(storedData);
       setUserData(parsedData);
     }
 
-    const socket = io("http://192.168.56.1:3001");
+    const socket = io("http://192.168.0.108:3001");
 
-    socket.on("response", (data) => {
-      console.log("Received userLoggedIn:", data);
-
-      localStorage.setItem("userData", JSON.stringify(data));
-
-      setUserData(data);
+    socket.on('connect', () => {
+      if (uniqueIdentifierFrom !== '') {
+        socket.emit('custom-event', uniqueIdentifierFrom);
+      }
     });
 
+    socket.on('custom-event', (query) => {
+      console.log('Received query response:', query);
+
+      if (query !== null) {
+
+
+        axios
+          .post("http://192.168.0.108:3001/api/user/check-User", {
+            query,
+          })
+          .then((response) => {
+            console.log({ response })
+
+          })
+          .catch((error) => {
+            console.error("API Error:", error);
+          })
+        
+      }
+
+    });
     return () => {
+      console.log("Disconnecting socket");
       socket.disconnect();
     };
-  }, []);
+  }, [uniqueIdentifierFrom]);
 
   return (
     <>
@@ -42,3 +69,5 @@ const YourComponent = () => {
 };
 
 export default YourComponent;
+
+
